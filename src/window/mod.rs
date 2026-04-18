@@ -44,7 +44,9 @@ impl FpsLimiter {
     }
 
     fn sleep(&mut self) {
-        match self.max_fps {
+        let Some(duration) = self.desired_loop_duration() else {
+           return;
+        };
             Some(max_fps) => {
                 let sleep_duration = (self.frame_start + Self::desired_loop_duration(max_fps))
                     .saturating_duration_since(Instant::now());
