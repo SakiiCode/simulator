@@ -40,22 +40,19 @@ impl FpsLimiter {
     }
 
     fn desired_loop_duration(&self) -> Option<Duration> {
-        Duration::from_secs_f32(1.0 / max_fps.get() as f32)
+        Some(Duration::from_secs_f32(1.0 / self.max_fps?.get() as f32))
     }
 
     fn sleep(&mut self) {
         let Some(duration) = self.desired_loop_duration() else {
-           return;
+            return;
         };
-            Some(max_fps) => {
-                let sleep_duration = (self.frame_start + Self::desired_loop_duration(max_fps))
-                    .saturating_duration_since(Instant::now());
-                thread::sleep(sleep_duration);
 
-                self.frame_start = Instant::now();
-            }
-            None => {}
-        }
+        let sleep_duration =
+            (self.frame_start + duration).saturating_duration_since(Instant::now());
+        thread::sleep(sleep_duration);
+
+        self.frame_start = Instant::now();
     }
 }
 
