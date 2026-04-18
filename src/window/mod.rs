@@ -2,6 +2,7 @@ use std::{
     env,
     fs::File,
     io::BufReader,
+    num::NonZeroU32,
     ops::Deref,
     process, thread,
     time::{Duration, Instant},
@@ -26,28 +27,33 @@ mod multi_window;
 pub use multi_window::MultiWindow;
 
 pub(crate) struct FpsLimiter {
-    max_fps: u32,
+    max_fps: Option<NonZeroU32>,
     frame_start: Instant,
 }
 
 impl FpsLimiter {
     pub(crate) fn new() -> Self {
         Self {
-            max_fps: 60,
+            max_fps: NonZeroU32::new(60),
             frame_start: Instant::now(),
         }
     }
 
-    fn desired_loop_duration(&self) -> Duration {
-        Duration::from_secs_f32(1.0 / self.max_fps as f32)
+    fn desired_loop_duration(max_fps: NonZeroU32) -> Duration {
+        Duration::from_secs_f32(1.0 / max_fps.get() as f32)
     }
 
     fn sleep(&mut self) {
-        let sleep_duration = (self.frame_start + self.desired_loop_duration())
-            .saturating_duration_since(Instant::now());
-        thread::sleep(sleep_duration);
+        match self.max_fps {
+            Some(max_fps) => {
+                let sleep_duration = (self.frame_start + Self::desired_loop_duration(max_fps))
+                    .saturating_duration_since(Instant::now());
+                thread::sleep(sleep_duration);
 
-        self.frame_start = Instant::now();
+                self.frame_start = Instant::now();
+            }
+            None => {}
+        }
     }
 }
 
@@ -204,6 +210,6 @@ impl Window {
 
     /// Sets the FPS limit of the window.
     pub fn set_max_fps(&mut self, max_fps: u32) {
-        self.fps_limiter.max_fps = max_fps;
+        self.fps_limiter.max_fps = NonZeroU32::new(max_fps);
     }
 }
