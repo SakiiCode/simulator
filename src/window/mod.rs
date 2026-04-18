@@ -208,7 +208,7 @@ impl Window {
             .events(&self.output_settings)
     }
 
-    /// Sets the FPS limit of the window.
+    /// Changes the FPS limit of the window. Set to `0` to disable the FPS limiter.
     pub fn set_max_fps(&mut self, max_fps: u32) {
         self.fps_limiter.max_fps = NonZeroU32::new(max_fps);
     }
