@@ -39,7 +39,7 @@ impl FpsLimiter {
         }
     }
 
-    fn desired_loop_duration(max_fps: NonZeroU32) -> Duration {
+    fn desired_loop_duration(&self) -> Option<Duration> {
         Duration::from_secs_f32(1.0 / max_fps.get() as f32)
     }
 
